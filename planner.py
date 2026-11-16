@@ -12,6 +12,10 @@ Plan mode:
 Backtest mode (walks the baked SOL daily series in data/sol-daily.json):
     python3 planner.py --backtest --start 2026-01-01 --capital 20000 \
         --stages 6 --depth 0.5 --weighting increasing
+
+Compare mode (same plan shape across several assets, side by side):
+    python3 planner.py --compare SOL:150:60:250,ETH:3000:1500:6000 \
+        --capital 20000 --stages 6 --weighting increasing
 """
 
 import argparse
@@ -46,6 +50,34 @@ def build_plan(capital, p_start, p_end, stages, weighting):
         cum_cost += usd
         tranches.append((price, usd, coins, cum_coins, cum_cost / cum_coins))
     return tranches, cum_coins, cum_cost / cum_coins
+
+
+def compare_rows(capital, stages, weighting, entries):
+    """One plan shape, several assets. Each entry is
+    (asset, p_start, p_end, target). Returns one row per asset with the
+    plan's average cost, total size, and value/P&L/return at its target."""
+    rows = []
+    for asset, p_start, p_end, target in entries:
+        _, total_coins, avg = build_plan(capital, p_start, p_end, stages, weighting)
+        value = total_coins * target
+        rows.append({
+            "asset": asset, "from": p_start, "to": p_end, "avg": avg,
+            "coins": total_coins, "target": target, "value": value,
+            "pl": value - capital, "ret": (value / capital - 1) * 100,
+        })
+    return rows
+
+
+def parse_compare(spec):
+    entries = []
+    for chunk in spec.split(","):
+        parts = chunk.strip().split(":")
+        if len(parts) != 4 or not parts[0]:
+            raise ValueError(
+                f"bad --compare entry {chunk!r}: expected ASSET:FROM:TO:TARGET")
+        asset, p_start, p_end, target = parts[0], float(parts[1]), float(parts[2]), float(parts[3])
+        entries.append((asset, p_start, p_end, target))
+    return entries
 
 
 def simulate(series, capital, stages, depth, weighting):
@@ -90,6 +122,24 @@ def print_plan(a):
     print("\nSpot cannot be liquidated. The plan's job is to remove improvisation from the drawdown.")
 
 
+def print_compare(a):
+    try:
+        entries = parse_compare(a.compare)
+    except ValueError as e:
+        raise SystemExit(str(e))
+    rows = compare_rows(a.capital, a.stages, a.weighting, entries)
+    print(f"\nCompare — same plan shape for every asset: {a.capital:,.0f} USDT each, "
+          f"{a.stages} tranches ({a.weighting})")
+    print(f"{'asset':>8} {'from':>12} {'to':>12} {'avg cost':>12} {'coins':>14} "
+          f"{'target':>12} {'value@target':>14} {'P/L':>14} {'return':>9}")
+    for r in rows:
+        print(f"{r['asset']:>8} {r['from']:>12,.2f} {r['to']:>12,.2f} {r['avg']:>12,.4f} "
+              f"{r['coins']:>14,.4f} {r['target']:>12,.2f} {r['value']:>14,.2f} "
+              f"{r['pl']:>+14,.2f} {r['ret']:>+8.1f}%")
+    print("\nSame ladder shape, different assets — compare average costs and what each "
+          "target has to do. Spot only; no leverage, no liquidation price.")
+
+
 def print_backtest(a):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "sol-daily.json")
     with open(path) as f:
@@ -128,8 +178,13 @@ def main():
     ap.add_argument("--backtest", action="store_true", help="run the backtest instead of the plan")
     ap.add_argument("--start", default="2026-01-01", help="backtest start date (YYYY-MM-DD)")
     ap.add_argument("--depth", type=float, default=0.5, help="backtest ladder depth, e.g. 0.5 = -50%%")
+    ap.add_argument("--compare", metavar="ASSET:FROM:TO:TARGET,...",
+                    help="compare the same plan shape across assets, "
+                         "e.g. SOL:150:60:250,ETH:3000:1500:6000")
     a = ap.parse_args()
-    if a.backtest:
+    if a.compare:
+        print_compare(a)
+    elif a.backtest:
         print_backtest(a)
     else:
         print_plan(a)

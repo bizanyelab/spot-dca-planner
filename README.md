@@ -27,6 +27,10 @@ Built by a trader who learned the difference between paper profits and settled p
 - Reports fills day by day, final equity, and the honest benchmark: **what going all-in on day one would have done**
 - Equity-vs-price chart with fill points marked
 
+**Compare mode** (new in v2.1, CLI)
+- **Multi-asset comparison in one run**: give each asset its own ladder and target (`ASSET:FROM:TO:TARGET`), the plan shape — capital, stages, weighting — stays identical
+- One table out: average cost, total size, value / P&L / return at each asset's target, side by side
+
 ## What the backtest actually shows (real runs, $20,000, 6 stages, −50% depth, increasing)
 
 | Start | Market did | Staged plan | All-in at start |
@@ -50,6 +54,10 @@ python3 planner.py --asset SOL --capital 20000 --from 150 --to 60 \
 # backtest mode
 python3 planner.py --backtest --start 2026-01-01 --capital 20000 \
     --stages 6 --depth 0.5 --weighting increasing
+
+# compare mode — same plan shape, several assets side by side
+python3 planner.py --compare SOL:150:60:250,ETH:3000:1500:6000 \
+    --capital 20000 --stages 6 --weighting increasing
 
 # tests
 python3 -m unittest discover -s tests

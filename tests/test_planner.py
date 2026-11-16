@@ -3,7 +3,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from planner import build_plan, ladder, simulate, weights_for  # noqa: E402
+from planner import build_plan, compare_rows, ladder, parse_compare, simulate, weights_for  # noqa: E402
 
 
 class TestLadder(unittest.TestCase):
@@ -55,6 +55,26 @@ class TestBacktest(unittest.TestCase):
         self.assertIsNotNone(fills[0])            # first tranche fills at the open
         self.assertTrue(any(f is None for f in fills))  # deeper tranches never trigger
         self.assertLess(spent, 1000)              # unfilled capital stays as cash
+
+
+class TestCompare(unittest.TestCase):
+    def test_parse_entries(self):
+        entries = parse_compare("SOL:150:60:250,ETH:3000:1500:6000")
+        self.assertEqual(entries, [("SOL", 150.0, 60.0, 250.0),
+                                   ("ETH", 3000.0, 1500.0, 6000.0)])
+
+    def test_parse_rejects_bad_entry(self):
+        with self.assertRaises(ValueError):
+            parse_compare("SOL:150:60")
+
+    def test_rows_match_single_plan_math(self):
+        rows = compare_rows(20000, 6, "increasing",
+                            [("SOL", 150, 60, 250), ("ETH", 3000, 1500, 6000)])
+        _, coins, avg = build_plan(20000, 150, 60, 6, "increasing")
+        self.assertAlmostEqual(rows[0]["coins"], coins)
+        self.assertAlmostEqual(rows[0]["avg"], avg)
+        self.assertAlmostEqual(rows[0]["value"], coins * 250)
+        self.assertAlmostEqual(rows[1]["pl"], rows[1]["value"] - 20000)
 
 
 if __name__ == "__main__":
