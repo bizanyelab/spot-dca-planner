@@ -3,12 +3,12 @@
 ![Type](https://img.shields.io/badge/strategy-spot%20only-3fb950?style=flat-square)
 ![Leverage](https://img.shields.io/badge/leverage-none-3fb950?style=flat-square)
 ![Liquidation risk](https://img.shields.io/badge/liquidation%20risk-zero-2f81f7?style=flat-square)
-[![Tests](https://github.com/bizanye8/spot-dca-planner/actions/workflows/tests.yml/badge.svg)](https://github.com/bizanye8/spot-dca-planner/actions/workflows/tests.yml)
+[![Tests](https://github.com/bizanyelab/spot-dca-planner/actions/workflows/tests.yml/badge.svg)](https://github.com/bizanyelab/spot-dca-planner/actions/workflows/tests.yml)
 ![Demo](https://img.shields.io/badge/demo-live-2f81f7?style=flat-square)
 
 **Plan a staged spot entry before the market moves — then backtest the same plan against 1,000 days of real price history. No leverage, no liquidation line, no improvisation mid-drawdown.**
 
-### ▶ Live demo: [bizanye8.github.io/spot-dca-planner](https://bizanye8.github.io/spot-dca-planner/)
+### ▶ Live demo: [bizanyelab.github.io/spot-dca-planner](https://bizanyelab.github.io/spot-dca-planner/)
 
 Built by a trader who learned the difference between paper profits and settled profits the expensive way: leveraged positions are closed by the path; spot positions are closed by the plan.
 
@@ -42,7 +42,7 @@ Read both rows. Staging is not magic — starting at the top still loses. What i
 
 ## Run it
 
-**Browser:** the [live demo](https://bizanye8.github.io/spot-dca-planner/), or open [`index.html`](index.html) locally (backtest data loads from the repo file).
+**Browser:** the [live demo](https://bizanyelab.github.io/spot-dca-planner/), or open [`index.html`](index.html) locally (backtest data loads from the repo file).
 
 **Command line:**
 
@@ -79,4 +79,4 @@ Paper numbers are easy; holding through −50% drawdowns on the way is the actua
 
 ---
 
-*Not financial advice. A planning tool by [BizAnyE](https://github.com/bizanye8) — Web3 operations & community, 3+ years trading spot and perpetuals.*
+*Not financial advice. A planning tool by [BizAnyE](https://github.com/bizanyelab) — Web3 operations & community, 3+ years trading spot and perpetuals.*
